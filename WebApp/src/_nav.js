@@ -28,8 +28,26 @@ export default {
       // }
     },
     {
+      name: 'NodeFiber',
+      url: '/nodefiber',
+      icon: 'icon-map'
+      // badge: {
+      //   variant: 'primary',
+      //   text: 'NEW'
+      // }
+    },
+    {
       name: 'Configuration',
       url: '/config',
+      icon: 'icon-wrench'
+      // badge: {
+      //   variant: 'primary',
+      //   text: 'NEW'
+      // }
+    },
+    {
+      name: 'Setting',
+      url: '/setting',
       icon: 'icon-wrench'
       // badge: {
       //   variant: 'primary',

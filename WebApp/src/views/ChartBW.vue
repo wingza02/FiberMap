@@ -110,7 +110,7 @@ export default {
           // console.log(response.data);
           this.createChart('eieichart', planetChartData);
     // this.axios
-    //     .get("https://fibermap.herokuapp.com/getallbw", {
+    //     .get("https://fibermap-api.cmu.ac.th/getallbw", {
     //       params: {
     //         name: "VSS_COM.cm.edu",
     //         type_port: "GigabitEthernet1/3/10"

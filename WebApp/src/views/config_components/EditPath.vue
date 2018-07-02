@@ -41,7 +41,8 @@
                 </div>
                 <div class="form-group">
                   <label for="colorline">Color Line : </label>
-                  <select class="form-control" v-model="colorline">
+                  <color-picker v-model="colorline"></color-picker>
+                  <!-- <select class="form-control" v-model="colorline">
                       <option value="Green">Green</option>
                       <option value="Blue">Blue</option>
                       <option value="DarkOrange">DarkOrangee</option>
@@ -51,7 +52,7 @@
                       <option value="LightPink">LightPink</option>
                       <option value="LightSalmon">LightSalmon</option>
                       <option value="Black">Black</option>
-                  </select>
+                  </select> -->
                 </div>
                 <div class="form-group" :class="{error: errors.has('Distance')}">
                   <label for="distance" class="control-label">Distance (Unit = Meter) : </label>
@@ -78,37 +79,6 @@
                   <span style="color:red" v-show="errors.has('Connector')" class="alert alert-danger">{{ errors.first('Connector') }}</span>
                 </div>
               </div>
-            <!-- </div> -->
-
-            <!-- <div class="collapse" id="polyline">
-              <div class="card card-body">
-                <label for="exampleFormControlTextarea1">PolyLine Coordinate</label>
-                <textarea class="form-control" id="exampleFormControlTextarea1" rows="10" v-model="message" disabled></textarea>
-              </div>
-            </div>
-          </div> -->
-            <!-- <label for="exampleFormControlTextarea1">PolyLine Coordinate</label>
-            <textarea class="form-control" id="exampleFormControlTextarea1" rows="10" v-model="message"></textarea>
-          </div> -->
-          <!-- <div class="form-group">
-              <label for="ip">IP Address : </label>
-              <input v-model="marker.ip" type="text" class="form-control" placeholder="e.g. 192.168.1.1" />
-          </div>
-          <div class="form-group">
-          <label for="typeSwitch">Type Switch : </label>
-          <select class="form-control" v-model="isCore">
-              <option value="0">Edge Switch</option>
-              <option value="1">Core Switch</option>
-          </select>
-          </div>
-          <div class="form-group">
-              <label for="lat">Latitude : </label>
-              <input v-model="marker.position.lat" type="text" class="form-control" placeholder="Latitude" disabled />
-          </div>
-          <div class="form-group">
-              <label for="lag">Longitude : </label>
-              <input v-model="marker.position.lng" type="text" class="form-control" placeholder="Longitude" disabled />
-          </div> -->
           <hr>
           <button type="submit" class="btn btn-primary" style="float: right;">Submit</button>
         </form>
@@ -123,8 +93,12 @@
 </template>
 
 <script>
-
+// Import other function from .. file
+import colorPicker from '../components/colorPicker'
 export default {
+  components: {
+    colorPicker
+  },
   data() {
     return {
       marker: {
@@ -166,7 +140,7 @@ export default {
     };
   },
   methods: {
-    onSubmit() {
+    onSubmit() {                                       // Validate input before run bedoreSendData()
       const result = this.$validator.validateAll();
       const err = this.errors.items
       if (typeof result.then === 'function') {
@@ -180,7 +154,7 @@ export default {
         });
       }
     },
-    addMarker (pos){
+    addMarker (pos){                                       // add sub-path on polyline with marker
         let position = {position: {lat:parseFloat(pos.latLng.lat().toFixed(7)),lng:parseFloat(pos.latLng.lng().toFixed(7))}}
         this.marker.push(position)
         this.paths[0].path.splice(-1, 0, {
@@ -193,7 +167,7 @@ export default {
         this.message = JSON.stringify(this.paths[0].path)
 
     },
-    replacePos (pos) {
+    replacePos (pos) {                                       // replace position value when drag marker
       // console.log(this.lastPos[0].path)
       for(let i=0; i<this.paths[0].path.length; i++) {
           if(this.lastPos[0].path.lat == this.paths[0].path[i].lat && this.lastPos[0].path.lng == this.paths[0].path[i].lng) {
@@ -208,7 +182,7 @@ export default {
       }
       this.calDistance()
     },
-    checkSamePos (pos) {
+    checkSamePos (pos) {                                       // check position when drag marker
         for(let i=0; i<this.paths[0].path.length; i++) {
             if(parseFloat(pos.latLng.lat().toFixed(7)) == this.paths[0].path[i].lat && parseFloat(pos.latLng.lng().toFixed(7)) == this.paths[0].path[i].lng) {
                 // console.log('same')
@@ -221,7 +195,7 @@ export default {
             }
         }
     },
-    calDistance () {
+    calDistance () {                                       // Calculate polyline distance on Map
       let distance = 0
       for (let i = 0; i < this.paths[0].path.length - 1; i++) {
           distance = distance + this.getDistance(this.paths[0].path[i].lat, this.paths[0].path[i].lng, this.paths[0].path[i + 1].lat, this.paths[0].path[i + 1].lng)
@@ -229,7 +203,7 @@ export default {
       console.log(distance)
       this.infoline.gmap_distance = (distance*1000).toFixed(4)
     },
-    getDistance (slat, slng, flat, flng) {
+    getDistance (slat, slng, flat, flng) {                                       // Get distance between 2 point
       let R = 6371
       let dLat = (flat - slat) * (Math.PI / 180)
       let dLng = (flng - slng) * (Math.PI / 180)
@@ -241,7 +215,7 @@ export default {
       let d = R * c
       return d
     },
-    render () {
+    render () {                                       // Update Map when Add Marker or Replace Position
         this.addPath[0].path = this.paths[0].path
         this.paths[0].path = []
         for (let i = 0; i < this.addPath[0].path.length; i++) {
@@ -251,33 +225,36 @@ export default {
             });
           }
     },
-    beforeSendData() {
-        this.axios.get('https://fibermap.herokuapp.com/deletepath', {
+    beforeSendData() {                                       // Delete old path and run sendData()
+        this.axios.get('https://fibermap-api.cmu.ac.th/deletepath', {
             params: {
                 line_id: this.$route.params.id
-            }
+            },
+            headers: {'Authorization': sessionStorage.getItem('token')}
         })
         .then(response => {
             this.sendData()
         })
     },
-    sendData() {
-      this.axios.post('https://fibermap.herokuapp.com/addpath', {
+    sendData() {                                       // send data to DB
+      this.axios.post('https://fibermap-api.cmu.ac.th/addpath', {
         path: this.paths[0].path,
         line_id: this.$route.params.id,
-        colorline: this.colorline
+        colorline: this.colorline,
+        token : sessionStorage.getItem('token')
       })
         .then(function (response) {
             console.log(response.data)
         })
-      this.axios.post('https://fibermap.herokuapp.com/addinfoline', {
+      this.axios.post('https://fibermap-api.cmu.ac.th/addinfoline', {
         line_id: this.$route.params.id,
         distance: this.infoline.distance,
         gmap_distance: this.infoline.gmap_distance,
         type_id: this.infoline.type_id,
         core: this.infoline.core,
         patch: this.infoline.patch,
-        connector: this.infoline.connector
+        connector: this.infoline.connector,
+        token : sessionStorage.getItem('token')
       })
         .then(function (response) {
             console.log(response.data)
@@ -285,11 +262,11 @@ export default {
             this.$router.push({name: 'Config'})
         }.bind(this))
     },
-    reset() {
+    reset() {                                       // Reset draw line
       this.getPath()
       this.getInfoline()
     },
-    newDraw () {
+    newDraw () {                                       // New draw line
         this.findlatlng();
         this.infoline.distance = null
         this.infoline.type_id = null
@@ -298,18 +275,19 @@ export default {
         this.infoline.connector = null
         this.colorline = 'Black'
     },
-    goBack() {
+    goBack() {                                       // go back to config page
       this.$router.push({ name: "Config" });
     },
-    findlatlng() {
+    findlatlng() {                                       // Get lat and lng of switch before draw line
       this.paths[0].path = [];
       this.addPath[0].path = []
       this.axios
-        .get("https://fibermap.herokuapp.com/findlatlng", {
+        .get("https://fibermap-api.cmu.ac.th/findlatlng", {
           params: {
             A: this.$route.params.A,
             B: this.$route.params.B
-          }
+          },
+          headers: {'Authorization': sessionStorage.getItem('token')}
         })
         .then(response => {
           this.marker = response.data;
@@ -325,11 +303,12 @@ export default {
         //   console.log(this.addPath[0].path);
         });
     },
-    getInfoline () {
-        this.axios.get('https://fibermap.herokuapp.com/getinfoline', {
+    getInfoline () {                                       // Get information old path from DB
+        this.axios.get('https://fibermap-api.cmu.ac.th/getinfoline', {
         params: {
             line_id: this.$route.params.id
-        }
+        },
+        headers: {'Authorization': sessionStorage.getItem('token')}
       })
         .then(response => {
             // console.log(response.data)
@@ -349,11 +328,12 @@ export default {
             // console.log(this.infoline)
         })
     },
-    getPath () {
-        this.axios.get('https://fibermap.herokuapp.com/getpathedit', {
+    getPath () {                                       // Get old path from DB
+        this.axios.get('https://fibermap-api.cmu.ac.th/getpathedit', {
         params: {
             line_id: this.$route.params.id
-        }
+        },
+        headers: {'Authorization': sessionStorage.getItem('token')}
       })
         .then(response => {
             this.marker = []
@@ -374,18 +354,27 @@ export default {
             this.center.lng = this.marker[0].position.lng
         })
     },
-    getDataUser() {
-      this.user.id = sessionStorage.getItem("iduser");
-      this.user.username = sessionStorage.getItem("username");
-      this.user.firstname = sessionStorage.getItem("firstname");
-      this.user.lastname = sessionStorage.getItem("lastname");
-      this.user.tel = sessionStorage.getItem("tel");
-      this.user.email = sessionStorage.getItem("email");
-      this.user.isAdmin = sessionStorage.getItem("isAdmin") === "true";
-      this.user.isLogin = sessionStorage.getItem("isLogin") === "true";
+    getDataUser () {                                       // Auth user for each page
+      this.user.id = sessionStorage.getItem('iduser')
+      this.user.username = sessionStorage.getItem('username')
+      this.user.firstname = sessionStorage.getItem('firstname')
+      this.user.lastname = sessionStorage.getItem('lastname')
+      this.user.tel = sessionStorage.getItem('tel')
+      this.user.email = sessionStorage.getItem('email')
+      this.user.isAdmin = sessionStorage.getItem('isAdmin') === 'true'
+      this.user.isLogin = sessionStorage.getItem('isLogin') === 'true'
+      
+      this.axios.post('https://fibermap-api.cmu.ac.th/checktoken', {
+        token : sessionStorage.getItem('token')
+      })
+      .then(response => {
+        if(response.data.status == 'timeout') {
+          this.$router.push({name: 'Login'})
+        }
+      })
     },
   },
-  created() {
+  created() {                                       // Run these function when start page
     this.getDataUser();
     if (this.user.isAdmin !== true) {
       this.$router.push({ name: "Dashboard" });

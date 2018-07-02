@@ -9,9 +9,9 @@ def closedb(db):
 	db.cursor().close()
 
 ##############################################################################################
-def insertdevice(db,name,model,ip,uptime):
+def insertdevice(db,name,ip,uptime):
 	cursor = db.cursor()
-	sql = """INSERT INTO `device`(`name`, `model`,`ip_addr`, `uptime`) VALUES ('%s','%s','%d','%d')""" %(name,model,ip,uptime)
+	sql = """INSERT INTO `device`(`name`,`ip_addr`, `uptime`) VALUES ('%s','%d','%d')""" %(name,ip,uptime)
 	try:
    		cursor.execute(sql)
    		db.commit()
@@ -38,40 +38,10 @@ def insertconnect(db,device_id,device_port,port_status,connect_device,connect_po
 	except:
    		db.rollback()
 
-def insertline(db,connection_id,distance,type_id,core_number,patch_panel,connector):
-	cursor = db.cursor()
-	sql = """INSERT INTO line(connection_id,distance,type_id,core_number,patch_panel,connector)
-         VALUES ('%d','%f','%d','%d','%s','%s')""" %(connection_id,distance,type_id,core_number,patch_panel,connector)
-	try:
-   		cursor.execute(sql)
-   		db.commit()
-	except:
-   		db.rollback()
-
 def inserttype(db,type):
 	cursor = db.cursor()
 	sql = """INSERT INTO typeline(type)
          VALUES ('%s')""" %(type)
-	try:
-   		cursor.execute(sql)
-   		db.commit()
-	except:
-   		db.rollback()
-
-def insertpolyline(db,line_id,seq_no,lat,lng):
-	cursor = db.cursor()
-	sql = """INSERT INTO polyline(line_id,seq_no,lat,lng)
-         VALUES ('%d','%d','%f','%f')""" %(line_id,seq_no,lat,lng)
-	try:
-   		cursor.execute(sql)
-   		db.commit()
-	except:
-   		db.rollback()
-
-def inserthistory(db,line_id,message,distance,status_broken):
-	cursor = db.cursor()
-	sql = """INSERT INTO history(line_id,comment,distance,status_broken)
-         VALUES ('%d','%s','%f','%d')""" %(line_id,message,distance,status_broken)
 	try:
    		cursor.execute(sql)
    		db.commit()
@@ -88,23 +58,23 @@ def insertstatus(db,status):
 	except:
    		db.rollback()
 	
-def insertbandwidth(db,device_id,if_type,inbound,outbound,ifspeed):
-	cursor = db.cursor()
-	sql = ("INSERT INTO `bandwidth`(`device_id`, `if_type`, `inbound`, `outbound`, `ifspeed`) VALUES ("+str(device_id)+",'"+if_type+"',"+str(inbound)+","+str(outbound)+","+str(ifspeed)+")")
-	try:
-   		cursor.execute(sql)
-   		db.commit()
-	except:
-   		db.rollback()
+# def insertbandwidth(db,device_id,if_type,inbound,outbound,ifspeed):
+# 	cursor = db.cursor()
+# 	sql = ("INSERT INTO `bandwidth`(`device_id`, `if_type`, `inbound`, `outbound`, `ifspeed`) VALUES ("+str(device_id)+",'"+if_type+"',"+str(inbound)+","+str(outbound)+","+str(ifspeed)+")")
+# 	try:
+#    		cursor.execute(sql)
+#    		db.commit()
+# 	except:
+#    		db.rollback()
 
-def insertcpu(db,device_id,cpu):
-	cursor = db.cursor()
-	sql = ("INSERT INTO cpu(device_id,cpu)VALUES ("+str(device_id)+","+str(cpu)+")")
-   	try:
-   		cursor.execute(sql)
-   		db.commit()
-	except:
-   		db.rollback()
+# def insertcpu(db,device_id,cpu):
+# 	cursor = db.cursor()
+# 	sql = ("INSERT INTO cpu(device_id,cpu)VALUES ("+str(device_id)+","+str(cpu)+")")
+#    	try:
+#    		cursor.execute(sql)
+#    		db.commit()
+# 	except:
+#    		db.rollback()
 
 ##############################################################################################
 def updatedevice(db,name,ip,uptime):
@@ -204,7 +174,18 @@ def getIp(db):
 	cursor.execute(sql)
 	results = cursor.fetchall()
 	for row in results:
-		temp = {"id": int(row[0]), "ip": row[1]}
+		temp = {"id": int(row[0]), "ip": row[1], "model":row[6]}
+		data.append(temp)
+	return data
+
+def getOID(db,model):
+	data = []
+	cursor = db.cursor()
+	sql=("SELECT d1.id, d1.oid, d1.slot FROM model_oid AS d1 INNER JOIN model AS d2 ON d1.model_id = d2.id WHERE d2.model = '"+model+"' ORDER BY d1.descript asc")
+	cursor.execute(sql)
+	results = cursor.fetchall()
+	for row in results:
+		temp = {"id": int(row[0]), "oid": row[1], "slot":row[2]}
 		data.append(temp)
 	return data
 

@@ -5,15 +5,11 @@ from snmp import *
 from db import *
 import requests
 
-hostip = '4b6453fd-8951-419f-886f-a8c70109f09c.mysql.sequelizer.com'
-user = 'fybpwnvoyhyyqgbl'
-passw = 'hBP7UoPdHrbLmvuyaWgbBY5D2XvEDCeqLfd7AGV7q8dKEmwK5G7Xha8qEjf6ZiGe'
-dbase = 'db4b6453fd8951419f886fa8c70109f09c'
+hostip = ''
+user = ''
+passw = ''
+dbase = ''
 
-# hostip = 'dc69c330-09ef-4391-9e84-a8b301659dd0.mysql.sequelizer.com'
-# user = 'sbphieacqlqffwde'
-# passw = 'jdk4feDo3NKe6cTUWCEqUFjZe3TnhABhLpYaJxrLEwxPG5hKQZyTwYwK3tXmtrfz'
-# dbase = 'dbdc69c33009ef43919e84a8b301659dd0'
 try:
     db = connectdb(hostip,user,passw,dbase)
 except Exception as e:

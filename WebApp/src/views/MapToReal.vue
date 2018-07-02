@@ -1,46 +1,43 @@
 <template>
   <div id="app">
-    <!-- map -->
-    <gmap-map :center="center" 
-    @zoom_changed="updateZoom" 
-    @center_changed="updateCenter"
-    :zoom="zoom"
-    mapTypeId="hybrid"
-    style="width: 100%; height: 550px; float: left;">
-    
-<!-- Marker+InfoWindow @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
-    <gmap-info-window :options="infoOptions" :position="infoWindowPos" :opened="infoWinOpen" @closeclick="infoWinOpen=false" v-if="infoMarker">
-        Name: {{infoContent.name}}<br>
-        <!-- IP: {{infoContent.ip}}<br> -->
-        <p v-if="infoContent.uptime=='0:00:00'">Status: Down <br> Uptime: 0:00:00 Hours</p>
-        <p v-else>Status: Up <br> Uptime: {{ infoContent.uptime }} Hours</p>
-        <a href="#" @click="zoomMap(infoWindowPos,'marker')">Zoom</a> <font v-if="user.isLogin==true&&user.isAdmin==true">|| </font>
-        <font v-if="user.isLogin==true&&user.isAdmin==true"><a href="#" data-toggle="modal" data-target="#graphCPU" @click="getCPU(infoContent)">Graph</a> || </font>
-        <a href="#" @click="backToMap()">Back</a> <!--|| <a data-toggle="modal" data-target="#myModal">History</a> -->
-    </gmap-info-window> 
-    <gmap-marker
-      :key="index"
-      v-for="(m, index) in filterData"
-      :title="m.name"
-      :position="m.position"
-      :clickable="true"
-      :draggable="false"
-      :icon="m.image"
-      @click="toggleInfoWindow(m,index)"
-    ></gmap-marker>
 
-    <gmap-marker
-      :key="index"
-      v-for="(m, index) in markers"
-      :title="m.name"
-      :position="m.position"
-      :clickable="true"
-      :draggable="false"
-      :icon="image1.url"
-      @click="toggleInfoWindow(m,index)">
+<!-- Map -->
+    <gmap-map :center="center" @zoom_changed="updateZoom" @center_changed="updateCenter" :zoom="zoom" mapTypeId="hybrid" style="width: 100%; height: 550px; float: left;">
+
+      <gmap-info-window :options="infoOptions" :position="infoWindowPos" :opened="infoWinOpen" @closeclick="infoWinOpen=false" v-if="infoMarker">
+        Name: {{infoContent.name}}<br>
+        <font v-if="user.isAdmin==true">IP: {{ infoContent.ip }} </font> <br>
+        <font v-if="user.isAdmin==true">Model: {{ infoContent.model }} </font> <br>
+        <font v-if="infoContent.uptime=='0:00:00'">Status: Down <br> Uptime: 0:00:00 Hours</font>
+        <font v-else>Status: Up <br> Uptime: {{ infoContent.uptime }} Hours</font>
+        <p>Comment: {{this.showHistorySW}}</p>
+        <a href="#" @click="zoomMap(infoWindowPos,'marker')">Zoom</a> <font v-if="user.isLogin==true&&user.isAdmin==true">|| </font>
+        <font v-if="user.isLogin==true&&user.isAdmin==true"> <a href="#" data-toggle="modal" data-target="#HistorySW">History</a> || </font>
+        <font v-if="user.isLogin==true&&user.isAdmin==true"> <a href="#" data-toggle="modal" data-target="#ProblemSW">Comment</a>  </font>
+        <!-- <font v-if="user.isLogin==true&&user.isAdmin==true"><a href="#" data-toggle="modal" data-target="#graphCPU" @click="getCPU(infoContent)">Graph</a> </font>  -->
+      </gmap-info-window>
+
+<!-- Switch Marker -->
+      <gmap-marker
+        :key="index"
+        v-for="(m, index) in switchs"
+        :title="m.name"
+        :position="m.position"
+        :clickable="true"
+        :draggable="false"
+        :icon="m.image"
+        @click="toggleInfoWindow(m,index)"
+      ></gmap-marker>
+
+<!-- My Location Marker -->
+      <gmap-marker
+        :position="myLocation"
+        :clickable="false"
+        :draggable="false"
+        :icon="image1.url">
       </gmap-marker>
 
-    <gmap-info-window  :options="infoOptions" :position="infoWindowPos" :opened="infoWinOpen" @closeclick="infoWinOpen=false" v-if="infoPolyline">
+      <gmap-info-window  :options="infoOptions" :position="infoWindowPos" :opened="infoWinOpen" @closeclick="infoWinOpen=false" v-if="infoPolyline">
         From: {{ infoContent.A }} - {{ infoContent.port_A }} <br>
         To: {{ infoContent.B }} - {{ infoContent.port_B }} <br>
         Status: {{ infoContent.linestatus }}<br>
@@ -53,81 +50,23 @@
         <a href="#" @click="zoomMap(infoWindowPos,'line')">Zoom</a> || 
         <a href="#" data-toggle="modal" data-target="#History" @click="loadHistory('All Time')">History</a> || 
         <font v-if="user.isLogin==true&&user.isAdmin==true"><a href="#" data-toggle="modal" data-target="#Problem">จุดขาด</a> ||</font> 
-        <font v-if="user.isLogin==true&&user.isAdmin==true"><a href="#" data-toggle="modal" data-target="#graphBW" @click="getBandwidth(infoContent)">Graph</a> || </font> 
+        <!-- <font v-if="user.isLogin==true&&user.isAdmin==true"><a href="#" data-toggle="modal" data-target="#graphBW" @click="getBandwidth(infoContent)">Graph</a> || </font>  -->
         <a href="#" @click="routeStreetView">Street View</a> || 
         <a href="#" @click="backToMap()">Back</a>
-    </gmap-info-window> 
-    <gmap-polyline
-      v-for="(pl,index) in connects" 
-      :key="index" 
-      :path="pl.path" 
-      :options="{geodesic:true, strokeColor:pl.linecolor ,strokeWeight:4, icons: [{icon: pl.icon, offset: pl.broken_percentile}]}"
-      @click="toggleInfoWindow2(pl,index,1)"
-      @mousemove="posMouse">
-    </gmap-polyline>
-    
+      </gmap-info-window> 
+
+      <gmap-polyline
+        v-for="(pl,index) in connects" 
+        :key="index" 
+        :path="pl.path" 
+        :options="{geodesic:true, strokeColor:pl.linecolor ,strokeWeight:4, icons: [{icon: pl.icon, offset: pl.broken_percentile}]}"
+        @click="toggleInfoWindow2(pl,index,1)"
+        @mousemove="posMouse">
+      </gmap-polyline>
+      
     </gmap-map>
 
-    <div v-show="false" style="display: inline-block; margin-left: 10px; width: 30%">
-      <div id="bigBoxs">
-        <!-- <input v-model="search" type="text" /> -->
-        <!-- </div> -->
-        <!-- <div class="col-md-6 col-md-offset-6" > -->
-        <h2>Status :
-          <!-- <input type="submit" class="btn btn-default" @click="checkStatus('all')" value="All"/>
-          <input type="submit" class="btn btn-default" @click="checkStatus('up')" value="Up"/>
-          <input type="submit" class="btn btn-default" @click="checkStatus('down')" value="Down"/> -->
-        <div class="btn-group">
-          <input type="submit" class="btn btn-default" @click="showByStatus('all')" value="All"/>
-          <input type="submit" class="btn btn-default" @click="showByStatus('updown',1)" value="Up"/>
-          <input type="submit" class="btn btn-default" @click="showByStatus('updown',0)" value="Down"/>
-        </div>
-        </h2>
-        <!-- </div> -->
-        <!-- <div class="col-md-6 col-md-offset-6" > -->
-        <h2>Layer :
-          <!-- <button class="btn btn-default" type="submit">All</button>
-          <button class="btn btn-default" type="submit">Core-End</button>
-          <button class="btn btn-default" type="submit">Core-Core</button> -->
-          <div class="btn-group">
-            <input type="submit" class="btn btn-default" @click="showLayer('all')" value="All"/>
-            <input type="submit" class="btn btn-default" @click="showLayer('coretocore')" value="Core-Core"/>
-            <input type="submit" class="btn btn-info dropdown-toggle" data-toggle="dropdown" value="Zone"/>
-            <ul class="dropdown-menu dropdown-menu-right">
-              <li><a @click="showLayer('zone',1)">COM</a></li>
-              <li><a @click="showLayer('zone',2)">ENG</a></li>
-              <li><a @click="showLayer('zone',5)">AGR</a></li>
-              <li><a @click="showLayer('zone',4)">MED</a></li>
-              <li><a @click="showLayer('zone',33)">MAE-HEA</a></li>
-            </ul>   
-          </div>
-        </h2>
-        <h2>Filtered By :
-          <!-- <button class="btn btn-default" type="submit">All</button>
-          <button class="btn btn-default" type="submit">Core-End</button>
-          <button class="btn btn-default" type="submit">Core-Core</button> -->
-          <div class="btn-group">
-            <input type="submit" class="btn btn-default" @click="showTable('switch')" value="Switch"/>
-            <input type="submit" class="btn btn-default" @click="showTable('line')" value="Optical Fiber"/>
-          </div>
-        </h2>
-        <vue-good-table v-if="isTableMarker"
-          :columns="columns"
-          :rows="filterData"
-          :paginate="true"
-          :lineNumbers="false"
-          :globalSearch="true"
-          :onClick="toggleInfoWindow"/>
-          <vue-good-table v-if="isTableLine"
-          :columns="columnsLine"
-          :rows="connects"
-          :paginate="true"
-          :lineNumbers="false"
-          :globalSearch="true"
-          :onClick="toggleInfoWindow2"/>
-        </div>
-      </div>
-
+<!-- Modal History Path -->
       <div class="modal" id="History" tabindex="-1" role="dialog" aria-labelledby="History" aria-hidden="true" style="width: 82%;">
         <div class="modal-dialog" role="document">
           <div class="modal-content" style="width: 150%;">
@@ -176,7 +115,8 @@
           </div>
         </div>
       </div>
-      
+
+<!-- Modal Add Point Break Path--> 
       <div class="modal" id="Problem" tabindex="-1" role="dialog" aria-labelledby="Problem" aria-hidden="true">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
@@ -196,11 +136,54 @@
         </div>
       </div>
 
+<!-- Modal Comment Switch -->
+      <div class="modal" id="ProblemSW" tabindex="-1" role="dialog" aria-labelledby="ProblemSW" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 class="modal-title" id="ProblemSW">Comment Switch : {{infoContent.name}}</h2>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <h3>
+                <label for="comment">Comment:</label>
+                <textarea class="form-control" rows="5" id="comment" v-model="commentSW"></textarea>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" @click="saveHistorySW" style="float: right;">Add</button>
+              </h3>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+
+<!-- Modal History Switch -->
+      </div><div class="modal" id="HistorySW" tabindex="-1" role="dialog" aria-labelledby="HistorySW" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 class="modal-title" id="HistorySW">History Switch : {{infoContent.name}}</h2>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <h3 v-for="(h,index) in historySW" :key="h.id">{{h.register_time}} - {{h.comment}} - {{h.approved_by}}</h3>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+<!-- Modal Graph CPU & Bandwidth -->
       <modal v-show="showModal" @close="showModal = false">
         <h3 slot="header">
           <p v-if="showCPU==true">{{ infoContent.name }} </p> 
           <p v-if="showBW==true">From: {{infoContent.B}} - To: {{infoContent.A}}</p>
-          
         </h3>
         <h3 slot="body">
           <div v-show="showCPU"><chart-report ref="chartCPU" :id="infoContent.id" ></chart-report></div>
@@ -211,19 +194,12 @@
 </template>
 
 <script>
-import CardLine1ChartExample from './dashboard/CardLine1ChartExample'
-import CardLine2ChartExample from './dashboard/CardLine2ChartExample'
-import CardLine3ChartExample from './dashboard/CardLine3ChartExample'
-import CardBarChartExample from './dashboard/CardBarChartExample'
-import MainChartExample from './dashboard/MainChartExample'
-import SocialBoxChartExample from './dashboard/SocialBoxChartExample'
-import CalloutChartExample from './dashboard/CalloutChartExample'
-import { Callout } from '../components/'
-import funcJS from '../function.js'
+// Import other function from .. file
 import modal from './modal'
 import ChartReport from './ChartReport'
 import ChartBW from './ChartBW'
 
+// Import make pdf and thai font
 import pdfMake from 'pdfmake/build/pdfmake'
 import pdfFonts from 'pdfmake/build/vfs_fonts'
 pdfMake.vfs = pdfFonts.pdfMake.vfs
@@ -243,19 +219,11 @@ pdfMake.fonts = {
 }
 
 export default {
-  name: 'dashboard',
+  name: 'MapToReal',
   components: {
     ChartReport,
     ChartBW,
-    modal,
-    Callout,
-    CardLine1ChartExample,
-    CardLine2ChartExample,
-    CardLine3ChartExample,
-    CardBarChartExample,
-    MainChartExample,
-    SocialBoxChartExample,
-    CalloutChartExample
+    modal
   },
   data () {
     return {
@@ -264,11 +232,6 @@ export default {
       },
       image1: {
         url: 'http://fibermap.cmu.ac.th/img/me.png'
-      },
-      goldStar: {
-        path: 'M-0.1,0a0.1,0.1 0 1,0 0.2,0a0.1,0.1 0 1,0 -0.2,0 M-6.5,0a6.5,6.5 0 1,0 13,0a6.5,6.5 0 1,0 -13,0',
-        strokeColor: 'gold',
-        strokeWeight: 3
       },
       broke_distance: 105,
       percentile: ['0%', '100%'],
@@ -290,128 +253,19 @@ export default {
           height: -35
         }
       },
-      markers: [
-        {
-          position: {
-            lat: 47.376332,
-            lng: 8.547511
-          },
-          infoText: 'Marker 1'
-        },
-        {
-          position: {
-            lat: 47.374592,
-            lng: 8.548867
-          },
-          infoText: 'Marker 2'
-        },
-        {
-          position: {
-            lat: 47.379592,
-            lng: 8.549867
-          },
-          infoText: 'Marker 3'
-        }
-      ],
-      plPath: [
-        { lat: 18.7956453, lng: 98.952812 },
-        { lat: 18.7982302, lng: 98.9491877 },
-        { lat: 18.8004538, lng: 98.9504027 },
-        { lat: 18.7932254, lng: 98.9562057 },
-        { lat: 18.7956453, lng: 98.952812 }
-      ],
-      lineColor: 'RED',
-      ppath: [
-        {
-          path: [
-            { lat: 18.803528, lng: 98.952944 },
-            { lat: 18.803289, lng: 98.952839 },
-            { lat: 18.803622, lng: 98.951974 },
-            { lat: 18.801703, lng: 98.951205 },
-            { lat: 18.800288, lng: 98.951428 },
-            { lat: 18.799764, lng: 98.951980 },
-            { lat: 18.799236, lng: 98.951806 },
-            { lat: 18.798836, lng: 98.951308 },
-            { lat: 18.79685, lng: 98.951251 },
-            { lat: 18.79674, lng: 98.951974 },
-            { lat: 18.796134, lng: 98.951974 },
-            { lat: 18.796137, lng: 98.951652 }
-          ]
-        },
-        {
-          path: [
-            { lat: 18.7982302, lng: 98.9491877 },
-            { lat: 18.7956453, lng: 98.952812 }
-          ]
-        },
-        {
-          path: [
-            { lat: 18.8004538, lng: 98.9504027 }
-            // { lat: 18.7982302, lng: 98.9491877 }
-          ]
-        },
-        {
-          path: [
-            { lat: 18.7932254, lng: 98.9562057 },
-            { lat: 18.7932254, lng: 98.9562057 }
-          ]
-        }
-      ],
-      plvisible: true,
       switchs: [],
       connects: [],
-      search: '',
-      columns: [
-        {
-          label: 'Name',
-          field: 'name',
-          filterable: false
-        },
-        {
-          label: 'Status',
-          field: 'status',
-          type: 'string',
-          html: false,
-          filterable: false
-        },
-        {
-          label: 'Uptime',
-          field: 'uptime',
-          type: 'number',
-          html: false,
-          filterable: false
-        }
-      ],
-      isTableMarker: true,
-      columnsLine: [
-        {
-          label: 'From',
-          field: 'A',
-          filterable: false
-        },
-        {
-          label: 'To',
-          field: 'B',
-          filterable: false
-        },
-        {
-          label: 'Status',
-          field: 'linestatus',
-          html: false,
-          filterable: false
-        }
-      ],
-      isTableLine: false,
       distance: '',
       history: [{ comment: '' }],
       dateHistory: 'All Time',
       fDate: '',
       tDate: '',
-      myLocation: '',
-      cpu_usage: [],
-      datacollection: null,
+      chkBroken: 1,
+      commentSW: '',
+      historySW: [],
+      showHistorySW: '',
+      myLocation: {'lat': 0, 'lng': 0},
       showModal: false,
-      date_usage: [],
       user: [],
       infoline: [],
       showCPU: false,
@@ -419,21 +273,7 @@ export default {
     }
   },
   methods: {
-    hellojs: funcJS.hello,
-    variant (value) {
-      let $variant
-      if (value <= 25) {
-        $variant = 'info'
-      } else if (value > 25 && value <= 50) {
-        $variant = 'success'
-      } else if (value > 50 && value <= 75) {
-        $variant = 'warning'
-      } else if (value > 75 && value <= 100) {
-        $variant = 'danger'
-      }
-      return $variant
-    },
-    imageMarker() {
+    imageMarker() {                                       // Change Image Marker
       for (let i=0; i<this.switchs.length; i++) {
         // console.log(this.switchs[i].status)
         if(this.switchs[i].status == 'Up' || this.switchs[i].uptime != 0 || this.switchs[i].uptime != '0:00:00') {
@@ -444,13 +284,11 @@ export default {
         }
       }
     },
-    showBroken () {
-      // console.log(this.connects)
-      // this.goldStar.path = 'M-0.1,0a0.1,0.1 0 1,0 0.2,0a0.1,0.1 0 1,0 -0.2,0 M-6.5,0a6.5,6.5 0 1,0 13,0a6.5,6.5 0 1,0 -13,0'
-      // this.goldStar.strokeColor = 'blue'
-      // this.goldStar.strokeWeight = 3
+    showBroken () {                                       // Show Break point on Map
       this.axios
-        .get('https://fibermap.herokuapp.com/getbroken')
+        .get('https://fibermap-api.cmu.ac.th/getbroken', {
+          headers: {'Authorization': sessionStorage.getItem('token')}
+        })
         .then(response => {
           this.broke_distance = response.data
           // console.log(this.broke_distance.length)
@@ -468,7 +306,7 @@ export default {
           this.calDistance()
         })
     },
-    calDistance () {
+    calDistance () {                                       // Calculate polyline distance on Map
       // console.log(this.connects[0])
       var distance = 0
       for (var i = 0; i < this.connects[0].path.length - 1; i++) {
@@ -480,7 +318,7 @@ export default {
       // console.log(this.connects[x])
       // console.log(this.connects[1].broke_distance)
     },
-    getDistance (slat, slng, flat, flng) {
+    getDistance (slat, slng, flat, flng) {                                       // Get distance between 2 point
       var R = 6371
       var dLat = (flat - slat) * (Math.PI / 180)
       var dLng = (flng - slng) * (Math.PI / 180)
@@ -493,11 +331,46 @@ export default {
       return d
       // console.log(d)
     },
-    checkBroken (index) {
+    saveHistorySW () {                                       // Save comment switch
+      // console.log(this.infoContent.id)
+      this.axios.get('https://fibermap-api.cmu.ac.th/savehistorysw', {
+        params: {
+          id: this.infoContent.id,
+          comment: this.commentSW.toString(),
+          userid: this.user.id
+        },
+        headers: {'Authorization': sessionStorage.getItem('token')}
+      })
+      .then(response => {
+        window.alert('Added comment for this switch.')
+        this.$router.go(this.$router.currentRoute)
+        this.commentSW = ''
+      })
+    },
+    loadHistorySW () {                                       // Load comment switch
+      this.axios
+        .get('https://fibermap-api.cmu.ac.th/loadhistorysw', {
+          params: {
+            id: this.infoContent.id
+          },
+          headers: {'Authorization': sessionStorage.getItem('token')}
+        })
+        .then(response => {
+          // console.log(response.data.data)
+          this.historySW = response.data.data
+          if(this.historySW.length != 0) {
+            this.showHistorySW = this.historySW[0].comment
+          }
+          else {
+            this.showHistorySW = ''
+          }
+        })
+    },
+    checkBroken (index) {                                       // Update status of path in history modal
       // console.log(this.chkBroken)
       // console.log(this.history[index].id)
       // console.log(this.history[index].distance)
-      this.axios.get('https://fibermap.herokuapp.com/updatehistory', {
+      this.axios.get('https://fibermap-api.cmu.ac.th/updatehistory', {
         params: {
           id: this.history[index].id,
           line_id: this.history[index].line_id,
@@ -507,27 +380,29 @@ export default {
           userid: this.user.id,
           A: this.infoContent.A,
           B: this.infoContent.B
-        }
+        },
+        headers: {'Authorization': sessionStorage.getItem('token')}
       })
         .then(response => {
           this.loadHistory('All Time')
         })
     },
-    saveHistory () {
+    saveHistory () {                                       // Save history path
       if(this.infoline.gmap_distance == null) {
         alert('Please add real path before add break point.')
       } else {
         if (this.distance >= this.infoline.gmap_distance) {
           alert('Please input distance less then Gmap distance.')
         } else {
-          this.axios.get('https://fibermap.herokuapp.com/savehistory', {
+          this.axios.get('https://fibermap-api.cmu.ac.th/savehistory', {
             params: {
               id: this.infoContent.id,
               A: this.infoContent.A,
               B: this.infoContent.B,
               distance: this.distance,
               userid: this.user.id
-            }
+            },
+            headers: {'Authorization': sessionStorage.getItem('token')}
           })
           .then(response => {
             window.alert('Added break point.')
@@ -537,49 +412,52 @@ export default {
         }
       }
     },
-    loadHistory (dateString) {
+    loadHistory (dateString) {                                       // Load history path
       this.dateHistory = dateString
       this.axios
-        .get('https://fibermap.herokuapp.com/loadhistory', {
+        .get('https://fibermap-api.cmu.ac.th/loadhistory', {
           params: {
             id: this.infoContent.id
-          }
+          },
+          headers: {'Authorization': sessionStorage.getItem('token')}
         })
         .then(response => {
           this.history = response.data.data
           this.chkBroken = null
         })
     },
-    filterHistory (value, dateString) {
+    filterHistory (value, dateString) {                                       // Filter history by button
       this.dateHistory = dateString
       this.axios
-        .get('https://fibermap.herokuapp.com/filterhistory', {
+        .get('https://fibermap-api.cmu.ac.th/filterhistory', {
           params: {
             id: this.infoContent.id,
             date: value
-          }
+          },
+          headers: {'Authorization': sessionStorage.getItem('token')}
         })
         .then(response => {
           this.history = response.data.data
           this.dateHistory = response.data.date.fromDate + ' - ' + response.data.date.toDate
         })
     },
-    filterHistory2 () {
+    filterHistory2 () {                                       // Filter history by range in calendar
       this.dateHistory = this.fDate + ' - ' + this.tDate
       this.axios
-        .get('https://fibermap.herokuapp.com/filterhistory2', {
+        .get('https://fibermap-api.cmu.ac.th/filterhistory2', {
           params: {
             id: this.infoContent.id,
             fromDate: this.fDate,
             toDate: this.tDate
-          }
+          },
+          headers: {'Authorization': sessionStorage.getItem('token')}
         })
         .then(response => {
           this.history = response.data
           this.dateHistory = this.fDate + ' - ' + this.tDate
         })
     },
-    downloadHistory (history) {
+    downloadHistory (history) {                                       // Download history to pdf
       let broken
       let distance
       let status
@@ -652,30 +530,33 @@ export default {
         window.alert('สายยังไม่เคยชำรุด')
       }
     },
-    showLayer (value, e) {
-      if (value === 'all') {
+    showLayer (value, e) {                                       // Filter by Layer on top of table
+      if (value === 'all') {                                       // All
         this.getSwitch()
         this.getConnect()
       }
-      if (value === 'coretocore') {
+      if (value === 'coretocore') {                                       // core-core
         this.switchs = []
         this.connects = []
         this.axios
-          .get('https://fibermap.herokuapp.com/showlayerRP')
+          .get('https://fibermap-api.cmu.ac.th/showlayerRP', {
+            headers: {'Authorization': sessionStorage.getItem('token')}
+          })
           .then(response => {
             this.switchs = response.data[0].switch
             this.connects = response.data[0].connect
             this.showBroken()
           })
       }
-      if (value === 'zone') {
+      if (value === 'zone') {                                       // zone
         this.switchs = []
         this.connects = []
         this.axios
-          .get('https://fibermap.herokuapp.com/showzoneRP', {
+          .get('https://fibermap-api.cmu.ac.th/showzoneRP', {
             params: {
               zone: e
-            }
+            },
+            headers: {'Authorization': sessionStorage.getItem('token')}
           })
           .then(response => {
             for (let i = 0; i < response.data[0].switch.length; i++) {
@@ -689,10 +570,10 @@ export default {
           })
       }
     },
-    backToMap () {
+    backToMap () {                                       // Go to previous page
       this.$router.go(-1)
     },
-    zoomMap (pos, obj) {
+    zoomMap (pos, obj) {                                       // Zoom Map
       if (obj === 'marker') {
         this.center = pos
         this.zoom = 18
@@ -701,53 +582,43 @@ export default {
         this.zoom = 17
       }
     },
-    updateZoom (zoom) {
+    updateZoom (zoom) {                                       // Update Map for new zoom value
       // console.log(zoom)
       this.zoom = zoom
     },
-    updateCenter (center) {
+    updateCenter (center) {                                       // Update Map for new center value
       this.center = {
         lat: center.lat(),
         lng: center.lng()
       }
     },
-    routeStreetView () {
-      // location.href = 'http://maps.google.com/maps?q=&layer=c&cbll=' + this.mousePos.lat + ',' + this.mousePos.lng
+    routeStreetView () {                                       // Link to StreetView on google map site
       window.open('http://maps.google.com/maps?q=&layer=c&cbll=' + this.mousePos.lat + ',' + this.mousePos.lng, '_blank')
     },
-    posMouse (pos) {
+    posMouse (pos) {                                       // Mouse Position
       this.mousePos = {
         lat: pos.latLng.lat(),
         lng: pos.latLng.lng()
       }
     },
-    showTable (value) {
-      // console.log(value)
-      if (value === 'switch') {
-        this.isTableMarker = true
-        this.isTableLine = false
-      } else if (value === 'line') {
-        this.isTableMarker = false
-        this.isTableLine = true
-      }
-    },
-    showByStatus (value, e) {
+    showByStatus (value, e) {                                       // Filter by status
       // console.log(value)
       // console.log(e)
-      if (value === 'all') {
+      if (value === 'all') {                                       // All
         this.getSwitch()
         this.getConnect()
       }
-      if (value === 'updown') {
+      if (value === 'updown') {                                       // Up or Down
         if (e === 1) {
           this.switchs = []
           this.connects = []
         }
         this.axios
-          .get('https://fibermap.herokuapp.com/showbystatusRP', {
+          .get('https://fibermap-api.cmu.ac.th/showbystatusRP', {
             params: {
               status: e
-            }
+            },
+            headers: {'Authorization': sessionStorage.getItem('token')}
           })
           .then(response => {
             // console.log(response.data[0].switch);
@@ -756,7 +627,7 @@ export default {
           })
       }
     },
-    toggleInfoWindow (marker, idx) {
+    toggleInfoWindow (marker, idx) {                                       // Toggle infowindow Marker
       this.infoOptions.pixelOffset.height = -20
       this.infoWindowPos = marker.position
       this.infoContent = marker
@@ -765,8 +636,9 @@ export default {
       this.currentMidx = idx
       this.infoMarker = true
       this.infoPolyline = false
+      this.loadHistorySW()
     },
-    toggleInfoWindow2 (line, idx, e) {
+    toggleInfoWindow2 (line, idx, e) {                                       // Toggle infowindow Line
       this.infoOptions.pixelOffset.height = 0
       if (e === 1) {
         var midLat = this.mousePos.lat
@@ -790,93 +662,71 @@ export default {
       this.infoMarker = false
       this.getInfoline(line.id)
     },
-    getMapToRealpath () {
+    getMapToRealpath () {                                       // Get switch and polyline from DB
       this.axios
-        .get('https://fibermap.herokuapp.com/realpathbyid', {
+        .get('https://fibermap-api.cmu.ac.th/realpathbyid', {
           params: {
             lineid: this.$route.query.lineid
-          }
+          },
+          headers: {'Authorization': sessionStorage.getItem('token')}
         })
         .then(response => {
           this.switchs = response.data[0].switch
           this.connects = response.data[0].connect
           this.imageMarker()
           this.showBroken()
-          // console.log(this.switchs)
         })
     },
-    getInfoline (lineid) {
+    getInfoline (lineid) {                                       // Get information for that path
       this.axios
-        .get('https://fibermap.herokuapp.com/getinfoline', {
+        .get('https://fibermap-api.cmu.ac.th/getinfoline', {
           params: {
             line_id : lineid
-          }
+          },
+          headers: {'Authorization': sessionStorage.getItem('token')}
         })
         .then(response => {
           // console.log(response.data)
           this.infoline = response.data
         })
     },
-    getCPU (value) {
+    getCPU (value) {                                       // Show Graph CPU
       console.log(value)
-      this.axios.get('https://fibermap.herokuapp.com/getcpu', {
+      this.axios.get('https://fibermap-api.cmu.ac.th/getcpu', {
         params: {
           device_id: value.id
-        }
+        },
+        headers: {'Authorization': sessionStorage.getItem('token')}
       })
       .then(response => {
         this.showBW = false
         this.showCPU = true
         if(this.showCPU == true) {
-          this.cpu_usage = response.data
           this.$refs.chartCPU.renewGraph()
-          this.$refs.chartCPU.startGraph(this.cpu_usage)
+          this.$refs.chartCPU.startGraph(response.data)
         }
         this.showModal = true  
       })
     },
-    getBandwidth (value) {
-      console.log(value)
-
-      this.axios.get('https://fibermap.herokuapp.com/getallbw', {
+    getBandwidth (value) {                                       // Show Graph Bandwidth
+      this.axios.get('https://fibermap-api.cmu.ac.th/getallbw', {
         params: {
           name: value.A,
           type_port: value.port_A
-        }
+        },
+        headers: {'Authorization': sessionStorage.getItem('token')}
       })
       .then(response => {
         this.showBW = true
         this.showCPU = false
         if (this.showBW == true) {
-          this.bandwidth_usage = response.data
           this.$refs.chartBW.renewGraph()
-          this.$refs.chartBW.startGraph(this.bandwidth_usage)
+          this.$refs.chartBW.startGraph(response.data)
         }
         this.showModal = true    
       })
     },
-    fillData (val, date) {
-      this.datacollection = {
-        labels: date,
-        datasets: [
-          {
-            label: 'CPU Usage (%)',
-            backgroundColor: '#f87979',
-            data: val
-          }
-        ]
-      }
-    },
-    filterChart (val) {
-      if (val === 0) {
-        this.fillData(this.cpu_usage.day.cpu, this.date_usage.day.time)
-      } else if (val === 1) {
-        this.fillData(this.cpu_usage.month.cpu, this.date_usage.month.time)
-      } else if (val === 2) {
-        this.fillData(this.cpu_usage.year.cpu, this.date_usage.year.time)
-      }
-    },
-    getDataUser () {
+    getDataUser () {                                       // Auth user for each page
       this.user.id = sessionStorage.getItem('iduser')
       this.user.username = sessionStorage.getItem('username')
       this.user.firstname = sessionStorage.getItem('firstname')
@@ -885,32 +735,30 @@ export default {
       this.user.email = sessionStorage.getItem('email')
       this.user.isAdmin = sessionStorage.getItem('isAdmin') === 'true'
       this.user.isLogin = sessionStorage.getItem('isLogin') === 'true'
+      
+      this.axios.post('https://fibermap-api.cmu.ac.th/checktoken', {
+        token : sessionStorage.getItem('token')
+      })
+      .then(response => {
+        if(response.data.status == 'timeout') {
+          this.$router.push({name: 'Login'})
+        }
+      })
     }
   },
-  created: function () {
+  created: function () {                                       // Run these function when start page
     this.getMapToRealpath()
     this.getDataUser()
     // var eiei = this.$route.query.lineid
     // console.log(parseInt(eiei))
     // console.log(this.$route)
   },
-  computed: {
-    filterData () {
-      return this.switchs.filter(sw => {
-        return sw.name.match(this.search)
-      })
-    }
-  },
-  mounted: function () {
+  mounted: function () {                                       // Run these function when stay in page
     if (navigator.geolocation) {
       var self = this
       navigator.geolocation.getCurrentPosition(function (position) {
-        self.myLocation = position.coords
-        self.markers[0].position.lat = position.coords.latitude
-        self.markers[0].position.lng = position.coords.longitude
-        // console.log(position.coords.latitude)
-        // console.log(position.coords.longitude)
-        // console.log(self.myLocation)
+        self.myLocation.lat = position.coords.latitude
+        self.myLocation.lng = position.coords.longitude
       })
     }
   }

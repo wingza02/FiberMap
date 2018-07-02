@@ -58,6 +58,7 @@
         sessionStorage.removeItem('email')
         sessionStorage.setItem('isAdmin', false)
         sessionStorage.setItem('isLogin', false)
+        sessionStorage.removeItem('token')
         this.$router.go(this.$router.currentRoute)
       }
     },

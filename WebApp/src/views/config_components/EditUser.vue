@@ -47,7 +47,7 @@
                   <span style="color:red" v-show="errors.has('Tel')" class="alert alert-danger">{{ errors.first('Tel') }}</span>
               </div>
           </div>
-          <div class="form-group" :class="{error: errors.has('Tel')}">
+          <div class="form-group" :class="{error: errors.has('Role')}">
               <label for="country" class="col-sm-3 control-label">Role</label>
               <div class="col-sm-9">
                   <select name="Role" id="position" class="form-control" v-model="addUser.isAdmin" v-validate="'required'">
@@ -86,7 +86,7 @@ export default {
     }
   },
   methods: {
-    onSubmit() {
+    onSubmit() {                                       // Validate input before run sendData()
       const result = this.$validator.validateAll();
       const err = this.errors.items
       if (typeof result.then === 'function') {
@@ -100,14 +100,15 @@ export default {
         });
       }
     },
-    sendData () {
-      this.axios.post('https://fibermap.herokuapp.com/edituser', {
+    sendData () {                                       // send data to DB
+      this.axios.post('https://fibermap-api.cmu.ac.th/edituser', {
         user_id: this.$route.params.id,
         firstname: this.addUser.firstname,
         lastname: this.addUser.lastname,
         tel: this.addUser.tel,
         email: this.addUser.email,
-        isAdmin: this.addUser.isAdmin
+        isAdmin: this.addUser.isAdmin,
+        token : sessionStorage.getItem('token')
       })
       .then(function (response) {
         console.log(response.data)
@@ -115,7 +116,7 @@ export default {
         this.$router.push({name: 'Config'})
       }.bind(this))
     },
-    getDataUser () {
+    getDataUser () {                                       // Auth user for each page
       this.user.id = sessionStorage.getItem('iduser')
       this.user.username = sessionStorage.getItem('username')
       this.user.firstname = sessionStorage.getItem('firstname')
@@ -124,12 +125,18 @@ export default {
       this.user.email = sessionStorage.getItem('email')
       this.user.isAdmin = sessionStorage.getItem('isAdmin') === 'true'
       this.user.isLogin = sessionStorage.getItem('isLogin') === 'true'
-    },
-    goBack () {
-      this.$router.push({name: 'Config'})
+      
+      this.axios.post('https://fibermap-api.cmu.ac.th/checktoken', {
+        token : sessionStorage.getItem('token')
+      })
+      .then(response => {
+        if(response.data.status == 'timeout') {
+          this.$router.push({name: 'Login'})
+        }
+      })
     },
   },
-  created () {
+  created () {                                       // Run these function when start page
     this.getDataUser()
     if (this.user.isAdmin !== true) {
       this.$router.push({name: 'Dashboard'})

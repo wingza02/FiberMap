@@ -100,7 +100,7 @@ export default {
           // console.log(response.data);
           this.createChart('planet-chart', planetChartData);
     // this.axios
-    //     .get("https://fibermap.herokuapp.com/getallcpu")
+    //     .get("https://fibermap-api.cmu.ac.th/getallcpu")
     //     .then(response => {
     //       this.info = response.data;
     //       this.Gengraph()

@@ -5,9 +5,8 @@ import json
 import datetime,time
 from snmp import *
 from db import *
-from config import ip,lat,lng
 
-uri = "mongodb://l3l3allza:123456@ds229549.mlab.com:29549/appharbor_j9h62tbg"
+uri = ""
 client = MongoClient(uri)
 db = client['appharbor_j9h62tbg']
 

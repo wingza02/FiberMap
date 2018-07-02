@@ -26,15 +26,6 @@
                 </b-row>
               </b-card-body>
             </b-card>
-            <!-- <b-card no-body class="text-white bg-primary py-5 d-md-down-none" style="width:44%">
-              <b-card-body class="text-center">
-                <div>
-                  <h2>Sign up</h2>
-                  <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                  <b-button variant="primary" class="active mt-3">Register Now!</b-button>
-                </div>
-              </b-card-body>
-            </b-card> -->
           </b-card-group>
         </b-col>
       </b-row>
@@ -47,15 +38,13 @@ export default {
   name: 'Login',
   data () {
     return {
-      adminid: 'admin',
-      adminpass: '123123123',
       username: '',
       password: ''
     }
   },
   methods: {
-    isLogin () {
-      this.axios.post('https://fibermap.herokuapp.com/authuser', {
+    isLogin () {                                       // Login
+      this.axios.post('https://fibermap-api.cmu.ac.th/authuser', {
         user: this.username,
         pass: this.password
       })
@@ -72,24 +61,17 @@ export default {
             sessionStorage.setItem('email', user[0].email)
             sessionStorage.setItem('isAdmin', user[0].isAdmin)
             sessionStorage.setItem('isLogin', true)
+            sessionStorage.setItem('token',user[0].token)
             // this.$router.push({name: sessionStorage.getItem('prevPage')})
             // this.$router.push({name: 'Dashboard'})
-            this.$router.push({name: 'RealPath'})
+            this.$router.push({name: 'Dashboard'})
           }
         }.bind(this))
     },
-    toBack () {
+    toBack () {                                       // Back to dashboard
       this.$router.push({name: 'Dashboard'})
     },
-    // isLogin1 () {
-    //   if (this.username !== this.adminid || this.password !== this.adminpass) {
-    //     window.alert('Invalid username & password')
-    //   } else {
-    //     sessionStorage.setItem('isAdmin', true)
-    //     this.$router.push({name: sessionStorage.getItem('prevPage')})
-    //   }
-    // },
-    keypressLogin (e) {
+    keypressLogin (e) {                                       // Press enter for run isLogin()
       // console.log(e.key)
       if (e.key === 'Enter') {
         this.isLogin()

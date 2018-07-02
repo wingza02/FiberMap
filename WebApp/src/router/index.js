@@ -8,11 +8,16 @@ import Full from '@/containers/Full'
 import Dashboard from '@/views/Dashboard'
 import Charts from '@/views/Charts'
 import Widgets from '@/views/Widgets'
+
 import FiberMap from '@/views/Map'
 import RealPath from '@/views/RealPath'
 import MapToReal from '@/views/MapToReal'
+import NodeFiber from '@/views/NodeFiber'
 import Config from '@/views/Configuration'
+import Setting from '@/views/Setting'
+
 import ChartReport from '@/views/ChartReport'
+
 
 // Views - ConfigComponents
 import AddSwitch from '@/views/config_components/AddSwitch'
@@ -22,6 +27,12 @@ import EditPath from '@/views/config_components/EditPath'
 import AddUser from '@/views/config_components/AddUser'
 import EditUser from '@/views/config_components/EditUser'
 import ChangePass from '@/views/config_components/ChangePass'
+import AddNode from '@/views/config_components/AddNode'
+import EditNode from '@/views/config_components/EditNode'
+import AddNodeConnect from '@/views/config_components/AddNodeConnect'
+import AddNodePath from '@/views/config_components/AddNodePath'
+import EditNodePath from '@/views/config_components/EditNodePath'
+import AddOID from '@/views/config_components/AddOID'
 
 // Views - Components
 import Buttons from '@/views/components/Buttons'
@@ -58,7 +69,8 @@ export default new Router({
         {
           path: 'dashboard',
           name: 'Dashboard',
-          component: Dashboard
+          component: Dashboard,
+          meta: { requiresAuth: true }
         },
         {
           path: 'map',
@@ -73,9 +85,16 @@ export default new Router({
           meta: { requiresAuth: true }
         },
         {
+          path: 'nodefiber',
+          name: 'NodeFiber',
+          component: NodeFiber,
+          meta: { requiresAuth: true }
+        },
+        {
           path: 'maptoreal',
           name: 'MapToReal',
-          component: MapToReal
+          component: MapToReal,
+          meta: { requiresAuth: true }
         },
         //  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         {
@@ -124,6 +143,49 @@ export default new Router({
           path: 'config/changepass',
           name: 'ChangePass',
           component: ChangePass,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'config/addnode',
+          name: 'AddNode',
+          component: AddNode,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'config/editnode',
+          name: 'EditNode',
+          component: EditNode,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'config/addnodeconnect',
+          name: 'AddNodeConnect',
+          component: AddNodeConnect,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'config/addnodepath',
+          name: 'AddNodePath',
+          component: AddNodePath,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'config/editnodepath',
+          name: 'EditNodePath',
+          component: EditNodePath,
+          meta: { requiresAuth: true }
+        },
+        //  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        {
+          path: 'setting',
+          name: 'Setting',
+          component: Setting,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'setting/addoid',
+          name: 'AddOID',
+          component: AddOID,
           meta: { requiresAuth: true }
         },
         //  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////

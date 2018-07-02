@@ -19,6 +19,13 @@
               <input name="IP Address" id="ip" v-model="marker.ip" type="text" class="form-control" placeholder="e.g. 192.168.1.1" v-validate="'required|ip'"/>
               <span style="color:red" v-show="errors.has('IP Address')" class="alert alert-danger">{{ errors.first('IP Address') }}</span>
             </div>
+            <div class="form-group" :class="{error: errors.has('Model Switch')}">
+            <label for="ModelSwitch">Model Switch : </label>
+            <select class="form-control" v-model="marker.model" name="Model Switch" id="ModelSwitch" v-validate="'required'">
+                <option v-for="m in model" :key="m.id">{{m.model}}</option>
+            </select>
+            <span style="color:red" v-show="errors.has('Model Switch')" class="alert alert-danger">{{ errors.first('Model Switch') }}</span>
+            </div>
             <div class="form-group">
             <label for="typeSwitch">Type Switch : </label>
             <select class="form-control" v-model="marker.is_core">
@@ -47,11 +54,12 @@ export default {
   data () {
     return {
       marker: [],
-      user: []
+      user: [],
+      model: []
     }
   },
   methods: {
-    onSubmit() {
+    onSubmit() {                                       // Validate input before run sendData()
       const result = this.$validator.validateAll()
       const err = this.errors.items
       if (typeof result.then === 'function') {
@@ -65,11 +73,11 @@ export default {
         });
       }
     },
-    posMarker (position) {
+    posMarker (position) {                                       // Update Marker Position When Drag Marker
       this.marker.position.lat = position.latLng.lat()
       this.marker.position.lng = position.latLng.lng()
     },
-    getDataUser () {
+    getDataUser () {                                       // Auth user for each page
       this.user.id = sessionStorage.getItem('iduser')
       this.user.username = sessionStorage.getItem('username')
       this.user.firstname = sessionStorage.getItem('firstname')
@@ -78,28 +86,48 @@ export default {
       this.user.email = sessionStorage.getItem('email')
       this.user.isAdmin = sessionStorage.getItem('isAdmin') === 'true'
       this.user.isLogin = sessionStorage.getItem('isLogin') === 'true'
+      
+      this.axios.post('https://fibermap-api.cmu.ac.th/checktoken', {
+        token : sessionStorage.getItem('token')
+      })
+      .then(response => {
+        if(response.data.status == 'timeout') {
+          this.$router.push({name: 'Login'})
+        }
+      })
     },
-    sendData () {
-      this.axios.get('https://fibermap.herokuapp.com/editswitch', {
+    sendData () {                                       // send data to DB
+      this.axios.get('https://fibermap-api.cmu.ac.th/editswitch', {
         params: {
           id_ip: this.marker.id_ip,
           ip: this.marker.ip,
           lat: parseFloat(this.marker.position.lat).toFixed(7),
           lng: parseFloat(this.marker.position.lng).toFixed(7),
-          is_core: this.marker.is_core
-        }
+          is_core: this.marker.is_core,
+          model: this.marker.model
+        },
+        headers: {'Authorization': sessionStorage.getItem('token')}
       })
         .then(response => {
           window.alert('Edited switch success.')
           this.$router.push({name: 'Config'})
         })
     },
-    goBack () {
+    goBack () {                                       // go back to config page
       this.$router.push({name: 'Config'})
+    },
+    getModel() {                                       // Get Model Switch From DB
+      this.axios.get('https://fibermap-api.cmu.ac.th/getmodel', {
+          headers: {'Authorization': sessionStorage.getItem('token')}
+        })
+      .then(response => {
+        this.model = response.data
+      })
     }
   },
-  created () {
+  created () {                                       // Run these function when start page
     this.getDataUser()
+    this.getModel()
     if (this.user.isAdmin !== true) {
       this.$router.push({name: 'Dashboard'})
     }

@@ -7,37 +7,39 @@ def connSession(ip,comString):
     return snmp
 
 #For Device Table.-------------------------------------------------------------
-def nameDevice(snmp):
-    name = snmp.get('.1.3.6.1.2.1.1.5.0')
+def nameDevice(snmp,oid):
+    # name = snmp.get('.1.3.6.1.2.1.1.5.0')
+    name = snmp.get(oid[0]['oid'])
     return name.value
 
-def modelDevice(snmp):
-    model = snmp.get('.1.3.6.1.2.1.1.1.0')
-    return model.value
+# def modelDevice(snmp):
+#     model = snmp.get('.1.3.6.1.2.1.1.1.0')
+#     return model.value
 
-def isCoreDevice(snmp):
-    name = snmp.get('.1.3.6.1.2.1.1.5.0')
-    if name.value == '6K_ENG':
-        return 1
-    elif name.value == '6K_AGR':
-        return 1
-    elif name.value == 'VSS_COM.cm.edu':
-        return 1
-    elif name.value == '6K_MED':
-        return 1
-    elif name.value == 'MEAHEA_3750_Main':
-        return 1
-    elif name.value == '4K_Maehea':
-        return 1
-    else:
-        return 0
+# def isCoreDevice(snmp):
+#     name = snmp.get('.1.3.6.1.2.1.1.5.0')
+#     if name.value == '6K_ENG':
+#         return 1
+#     elif name.value == '6K_AGR':
+#         return 1
+#     elif name.value == 'VSS_COM.cm.edu':
+#         return 1
+#     elif name.value == '6K_MED':
+#         return 1
+#     elif name.value == 'MEAHEA_3750_Main':
+#         return 1
+#     elif name.value == '4K_Maehea':
+#         return 1
+#     else:
+#         return 0
 
-def upTimeDevice(snmp):
-    uptime = snmp.get('.1.3.6.1.2.1.1.3.0')
+def upTimeDevice(snmp,oid):
+    # uptime = snmp.get('.1.3.6.1.2.1.1.3.0')
+    uptime = snmp.get(oid[1]['oid'])
     return uptime.value 
 
 #For Port Table.---------------------------------------------------------------
-def ifType(snmp,db,nameAll):
+def ifType(snmp,db,nameAll,oid):
     name = []
     name2 = []
     oidname = []
@@ -45,9 +47,11 @@ def ifType(snmp,db,nameAll):
     oidport = []
     port = []
     data = []
+    iftype = []
     # nameAll = checkdevice(db)
 
-    cdpname = snmp.walk('.1.3.6.1.4.1.9.9.23.1.2.1.1.6')
+    # cdpname = snmp.walk('.1.3.6.1.4.1.9.9.23.1.2.1.1.6')
+    cdpname = snmp.walk(oid[2]['oid'])
     for i in cdpname:
         oidname.append(i.oid)
         name.append(i.value)
@@ -55,11 +59,13 @@ def ifType(snmp,db,nameAll):
         for j in range (len(nameAll)):
             if name[i]==nameAll[j]:
                 name2.append(name[i])
-                oidname2.append(oidname[i].split('.')[14])
+                # oidname2.append(oidname[i].split('.')[14])
+                oidname2.append(oidname[i].split('.')[oid[2]['slot']])
 
-    iftpye = snmp.walk('.1.3.6.1.2.1.2.2.1.2')
-    for item in iftpye:
-        oidport.append(item.oid.split('.')[10])
+    # iftype = snmp.walk('.1.3.6.1.2.1.2.2.1.2')
+    iftype = snmp.walk(oid[3]['oid'])
+    for item in iftype:
+        oidport.append(item.oid.split('.')[oid[3]['slot']])
         port.append(item.value)
     for j in range (len(oidname2)) :
         for i in range (len(oidport)):
@@ -67,7 +73,7 @@ def ifType(snmp,db,nameAll):
                 data.append(port[i])
     return data
 
-def ifOper(snmp,db,nameAll):
+def ifOper(snmp,db,nameAll,oid):
     name = []
     name2 = []
     oidname = []
@@ -77,7 +83,8 @@ def ifOper(snmp,db,nameAll):
     data = []
     # nameAll = checkdevice(db)
 
-    cdpname = snmp.walk('.1.3.6.1.4.1.9.9.23.1.2.1.1.6')
+    # cdpname = snmp.walk('.1.3.6.1.4.1.9.9.23.1.2.1.1.6')
+    cdpname = snmp.walk(oid[2]['oid'])
     for i in cdpname:
         oidname.append(i.oid)
         name.append(i.value)
@@ -85,11 +92,14 @@ def ifOper(snmp,db,nameAll):
         for j in range (len(nameAll)):
             if name[i]==nameAll[j]:
                 name2.append(name[i])
-                oidname2.append(oidname[i].split('.')[14])
+                # oidname2.append(oidname[i].split('.')[14])
+                oidname2.append(oidname[i].split('.')[oid[2]['slot']])
 
-    ifoper = snmp.walk('.1.3.6.1.2.1.2.2.1.8')
+    # ifoper = snmp.walk('.1.3.6.1.2.1.2.2.1.8')
+    ifoper = snmp.walk(oid[4]['oid'])
     for item in ifoper:
-        oidoper.append(item.oid.split('.')[10])
+        # oidoper.append(item.oid.split('.')[10])
+        oidoper.append(item.oid.split('.')[oid[4]['slot']])
         oper.append(item.value)
     for j in range (len(oidname2)) :
         for i in range (len(oidoper)):
@@ -98,7 +108,7 @@ def ifOper(snmp,db,nameAll):
     return data
 
 #For Connect Table.------------------------------------------------------------
-def cdpName(snmp,db,nameAll):
+def cdpName(snmp,db,nameAll,oid):
     name = []
     name2 = []
     oidname = []
@@ -107,7 +117,8 @@ def cdpName(snmp,db,nameAll):
     iftype = []
     data = []
     # nameAll = checkdevice(db)
-    cdpname = snmp.walk('.1.3.6.1.4.1.9.9.23.1.2.1.1.6')
+    # cdpname = snmp.walk('.1.3.6.1.4.1.9.9.23.1.2.1.1.6')
+    cdpname = snmp.walk(oid[2]['oid'])
     for i in cdpname:
         oidname.append(i.oid)
         name.append(i.value)
@@ -116,11 +127,12 @@ def cdpName(snmp,db,nameAll):
         for j in range(len(nameAll)):
             if(nameAll[j]==name[i]):
                 name2.append(name[i])
-                oidname2.append(oidname[i].split('.')[14])
+                # oidname2.append(oidname[i].split('.')[14])
+                oidname2.append(oidname[i].split('.')[oid[2]['slot']])
 
-    iftpye = snmp.walk('.1.3.6.1.2.1.2.2.1.8')
-    for item in iftpye:
-        oidif.append(item.oid.split('.')[10])
+    if_type = snmp.walk(oid[4]['oid'])
+    for item in if_type:
+        oidif.append(item.oid.split('.')[oid[4]['slot']])
         iftype.append(item.value)
 
     for i in range (len(oidname2)) :
@@ -129,7 +141,7 @@ def cdpName(snmp,db,nameAll):
                 data.append(name2[i])
     return data
 
-def cdpIf(snmp,db,nameAll):
+def cdpIf(snmp,db,nameAll,oid):
     name = []
     name2 = []
     oidname = []
@@ -138,7 +150,8 @@ def cdpIf(snmp,db,nameAll):
     iftype = []
     data = []
     # nameAll = checkdevice(db)
-    cdpname = snmp.walk('.1.3.6.1.4.1.9.9.23.1.2.1.1.6')
+    # cdpname = snmp.walk('.1.3.6.1.4.1.9.9.23.1.2.1.1.6')
+    cdpname = snmp.walk(oid[2]['oid'])
     for i in cdpname:
         oidname.append(i.oid)
         name.append(i.value)
@@ -147,11 +160,14 @@ def cdpIf(snmp,db,nameAll):
         for j in range(len(nameAll)):
             if(nameAll[j]==name[i]):
                 name2.append(name[i])
-                oidname2.append(oidname[i].split('.')[14])
+                # oidname2.append(oidname[i].split('.')[14])
+                oidname2.append(oidname[i].split('.')[oid[2]['slot']])
     
-    cdpport = snmp.walk('.1.3.6.1.4.1.9.9.23.1.2.1.1.7')
+    # cdpport = snmp.walk('.1.3.6.1.4.1.9.9.23.1.2.1.1.7')
+    cdpport = snmp.walk(oid[5]['oid'])
     for item in cdpport:
-        oidif.append(item.oid.split('.')[14])
+        # oidif.append(item.oid.split('.')[14])
+        oidif.append(item.oid.split('.')[oid[5]['slot']])
         iftype.append(item.value)
 
     for i in range (len(oidname2)) :
