@@ -31,12 +31,12 @@ For detailed explanation on how things work, checkout the [guide](http://vuejs-t
 
 _____________________________________________________________
 Fix 11/9/2018<br>
-how to fix error
-1.comment about firebase
-2.change bootstrap and jquery cdn in index.html
-3.import BootstrapVue from 'bootstrap-vue'
-4.npm install node-sass sass-loader
-
-how to fix stuck when drag map
+how to fix error<br>
+1.comment about firebase<br>
+2.change bootstrap and jquery cdn in index.html<br>
+3.import BootstrapVue from 'bootstrap-vue'<br>
+4.npm install node-sass sass-loader<br>
+<br>
+how to fix stuck when drag map<br>
   delete @center_changed="updateCenter" in gmap-map
 _____________________________________________________________
