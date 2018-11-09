@@ -30,7 +30,7 @@ npm test
 For detailed explanation on how things work, checkout the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
 
 _____________________________________________________________
-Fix 11/9/2018
+Fix 11/9/2018<br>
 how to fix error
 1.comment about firebase
 2.change bootstrap and jquery cdn in index.html
@@ -38,5 +38,5 @@ how to fix error
 4.npm install node-sass sass-loader
 
 how to fix stuck when drag map
-  delete @center_changed="updateCenter" in <gmap-map> 
+  delete @center_changed="updateCenter" in gmap-map
 _____________________________________________________________
